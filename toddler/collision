@@ -1,0 +1,43 @@
+// collision
+/* 
+
+To pass the first check argv[1] must be length 20
+Second check requires check_password()'s result == hashcode
+To get the result == hashcode need to analyze check_password()
+
+unsigned long hashcode = 0x21DD09EC;
+unsigned long check_password(const char* p)
+{
+	int* ip = (int*)p;
+	int i;
+	int res=0;
+	for(i=0; i<5; i++){
+		res += ip[i];
+	}
+	return res;
+}
+
+We cast char* p to an int* and set it equal to ip.
+So they point to the same memory location, but ip is an int*.
+This means that when ip is dereferenced it looks at 4 bytes.
+And when we add to the pointer it will move to the next 4 bytes.
+
+Since our input is exactly 20 bytes, we need 5 4 byte numbers to add up to hashcode
+because when we increment ip in the for loop we get something like the following
+and we control the A-E data.
+
+AAAA BBBB CCCC DDDD EEEE
+0    1    2    3    4
+ip+0 ip+1 ip+2 ip+3 ip+4
+
+res += ip+0
+...
+res += ip+4
+
+0x21DD09EC = 0x01010101 * 4 + X
+X = 0x21DD09EC - 0x04040404
+X = 0x1DD905E8
+
+./col "`perl -e 'print("\x01"x16 . "\xe8\x05\xd9\x1d")'`"
+
+*/
